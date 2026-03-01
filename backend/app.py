@@ -8,25 +8,8 @@ Run:
     python app.py
 """
 
-import os
-import sys
-
 from flask import Flask
 from flask_cors import CORS
-
-# ── Debug: show where Python is looking for files ────────────────
-print(f"[app.py] CWD: {os.getcwd()}")
-print(f"[app.py] __file__: {os.path.abspath(__file__)}")
-
-ML_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "machine-learning-stuff"))
-print(f"[app.py] ML_DIR resolved to: {ML_DIR}")
-print(f"[app.py] ML_DIR exists: {os.path.isdir(ML_DIR)}")
-
-model_file = os.path.join(ML_DIR, "ca_wildfire_model.joblib")
-scaler_file = os.path.join(ML_DIR, "ca_wildfire_scaler.joblib")
-print(f"[app.py] model joblib exists: {os.path.isfile(model_file)}")
-print(f"[app.py] scaler joblib exists: {os.path.isfile(scaler_file)}")
-
 from routes.predict import predict_bp
 
 def create_app():
