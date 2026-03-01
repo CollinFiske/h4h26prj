@@ -15,6 +15,8 @@ const getInitialState = () => {
   return {
     latitude: cookieLat ? String(cookieLat) : "",
     longitude: cookieLng ? String(cookieLng) : "",
+    lang: "en",
+    disability: "none",
     locationName: "",
     date: isoDate,
     time: timeValue,
@@ -48,8 +50,10 @@ function EvacuationForm({ onSubmit, loading }) {
     const parsedLng = parseFloat(form.longitude);
 
     const payload = {
-      latitude: Number.isFinite(parsedLat) ? parsedLat : null,
-      longitude: Number.isFinite(parsedLng) ? parsedLng : null,
+      lat: Number.isFinite(parsedLat) ? parsedLat : null,
+      lon: Number.isFinite(parsedLng) ? parsedLng : null,
+      lang: form.lang,
+      disability: form.disability,
       location_name: form.locationName,
       date: form.date,
       time: form.time,
@@ -93,6 +97,27 @@ function EvacuationForm({ onSubmit, loading }) {
             onChange={handleText}
           />
         </div>
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="lang">Language</label>
+        <select id="lang" name="lang" value={form.lang} onChange={handleText}>
+          <option value="en">English</option>
+          <option value="es">Spanish</option>
+        </select>
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="disability">Air sensitivity / disability profile</label>
+        <select
+          id="disability"
+          name="disability"
+          value={form.disability}
+          onChange={handleText}
+        >
+          <option value="none">None (healthy)</option>
+          <option value="mobility">Mobility/health-sensitive</option>
+        </select>
       </div>
 
       <div className="form-group">

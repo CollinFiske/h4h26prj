@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import LocationDisplay from "./components/LocationDisplay";
 import EvacuationForm from "./components/EvacuationForm";
 import ResultsDisplay from "./components/ResultsDisplay";
+import GoogleMapPanel from "./components/GoogleMapPanel";
 
 function App() {
   const [prediction, setPrediction] = useState(null);
@@ -9,7 +10,7 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   /**
-   * Sends form data + location to the Flask backend and stores the response.
+   * Sends location + constraints to the A* evacuation backend and stores the response.
    */
   const handleFormSubmit = async (formData) => {
     setLoading(true);
@@ -31,7 +32,7 @@ function App() {
       const data = await response.json();
       setPrediction(data);
     } catch (err) {
-      console.error("Prediction request failed:", err);
+      console.error("Evacuation request failed:", err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -50,18 +51,16 @@ function App() {
 
       {/* Map (left) + Results (right) side-by-side */}
       <div className="map-results-row">
-        <div className="map-placeholder">
-          [Map placeholder -- replace with live map later]
-        </div>
+        <GoogleMapPanel />
 
         <div className="results-column">
-          {loading && <div className="loading">Analyzing risk and generating route...</div>}
+          {loading && <div className="loading">Computing A* evacuation route...</div>}
           {error && <ResultsDisplay error={error} />}
           {prediction && <ResultsDisplay data={prediction} />}
           {!loading && !error && !prediction && (
             <div className="results-panel results-empty">
-              <h2>Prediction Results</h2>
-              <pre className="result-pre">{"Submit the form below to see results here."}</pre>
+              <h2>Evacuation Plan</h2>
+              <pre className="result-pre">{"Submit the form below to compute an A* route."}</pre>
             </div>
           )}
         </div>
