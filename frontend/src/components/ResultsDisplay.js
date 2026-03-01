@@ -7,8 +7,8 @@ function ResultsDisplay({ data, error }) {
   if (error) {
     return (
       <div className="results-panel">
-        <h2>Prediction Results</h2>
-        <pre className="result-pre result-error">{error}</pre>
+        <h2>Evacuation Plan</h2>
+        <div className="result-error">{error}</div>
       </div>
     );
   }
@@ -17,8 +17,10 @@ function ResultsDisplay({ data, error }) {
 
   return (
     <div className="results-panel">
-      <h2>Prediction Results</h2>
-      <pre className="result-pre">{JSON.stringify(data, null, 2)}</pre>
+      <h2>Your Evacuation Plan</h2>
+      <div className="result-guidance">
+        {data.guidance}
+      </div>
     </div>
   );
 }

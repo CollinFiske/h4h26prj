@@ -135,6 +135,23 @@ body {
   color: #f87171;
 }
 
+.result-guidance {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #333;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.result-error {
+  background-color: #fee;
+  border: 1px solid #fcc;
+  color: #c33;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
 /* ───────────────────────── Responsive: stack on small screens ──── */
 @media (max-width: 720px) {
   .map-results-row {

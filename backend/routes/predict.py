@@ -12,6 +12,9 @@ ML_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "ma
 if ML_DIR not in sys.path:
     sys.path.insert(0, ML_DIR)
 
+# ── Import AI model for conversational responses ────────────────────
+from ai import call_ai_model
+
 # ── Import your trained model wrapper ────────────────────────────────
 # Uncomment the line below once you've added your real model in
 # machine-learning-stuff/model.py
@@ -81,35 +84,9 @@ def predict():
     has_medications = data.get("has_medications", False)
     other_concerns = data.get("other_concerns", "")
 
-    # ── Call ML model (placeholder) ──────────────────────────────
-    # Replace this block with your real model call, e.g.:
-    #   result = ml_predict(latitude, longitude, has_disability, ...)
-    #
-    # For now we return static placeholder text so you can verify
-    # the full pipeline works end-to-end before plugging in the model.
-
-    fire_risk = "MODERATE"
-    evacuation_route = (
-        f"Head north on US-101 from ({latitude}, {longitude}). "
-        "Take exit 42B toward Safe Zone Shelter A."
-    )
-
-    notes_parts = []
-    if has_disability:
-        notes_parts.append("Accessible vehicle requested.")
-    if has_pets:
-        notes_parts.append("Pet-friendly shelter assigned.")
-    if has_kids:
-        notes_parts.append("Family shelter with childcare available.")
-    if has_medications:
-        notes_parts.append("Route passes by open pharmacy.")
-    if other_concerns:
-        notes_parts.append(f"User note: {other_concerns}")
-
-    notes = " ".join(notes_parts) if notes_parts else "No special accommodations needed."
-
+    # ── Call AI model for personalized guidance ──────────────────
+    ai_response = call_ai_model(data)
+    
     return jsonify({
-        "fire_risk": fire_risk,
-        "evacuation_route": evacuation_route,
-        "notes": notes,
+        "guidance": ai_response,
     })
