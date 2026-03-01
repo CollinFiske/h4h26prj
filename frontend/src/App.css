@@ -79,8 +79,8 @@ body {
   position: relative;
   flex: 1 1 50%;
   min-height: 280px;
-  background: #d4d4d4;
-  border: 2px dashed #999;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
   overflow: hidden;
 }
@@ -111,6 +111,85 @@ body {
   font-size: 0.95rem;
   padding: 12px;
   text-align: center;
+}
+
+.evac-grid-panel {
+  display: flex;
+  flex-direction: column;
+  padding-top: 44px;
+}
+
+.evac-grid-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  padding: 8px 10px 10px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 0.72rem;
+  color: #334155;
+}
+
+.evac-grid-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.evac-grid {
+  display: grid;
+  gap: 1px;
+  background: #e2e8f0;
+  padding: 8px;
+  overflow: auto;
+  min-height: 280px;
+}
+
+.evac-tile {
+  aspect-ratio: 1 / 1;
+  min-width: 6px;
+  min-height: 6px;
+  background: #fff;
+}
+
+.tile-free {
+  background: #ffffff;
+}
+
+.tile-building {
+  background: #2563eb;
+}
+
+.tile-fire {
+  background: #dc2626;
+}
+
+.tile-air {
+  background: #f59e0b;
+}
+
+.tile-path {
+  box-shadow: inset 0 0 0 2px #fde047;
+}
+
+.tile-center {
+  box-shadow: inset 0 0 0 2px #16a34a;
+}
+
+.tile-start {
+  background: #7e22ce;
+}
+
+.tile-goal {
+  box-shadow: inset 0 0 0 2px #14532d;
 }
 
 /* ───────────────────────── Results Column ───────────────────────── */

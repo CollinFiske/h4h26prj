@@ -18,7 +18,7 @@ function App() {
     setPrediction(null);
 
     try {
-      const response = await fetch("/api/predict", {
+      const response = await fetch("/evac/now", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -51,7 +51,7 @@ function App() {
 
       {/* Map (left) + Results (right) side-by-side */}
       <div className="map-results-row">
-        <GoogleMapPanel />
+        <GoogleMapPanel data={prediction} loading={loading} />
 
         <div className="results-column">
           {loading && <div className="loading">Computing A* evacuation route...</div>}
