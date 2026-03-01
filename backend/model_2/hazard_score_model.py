@@ -42,8 +42,7 @@ def build_hazard_features(df_in: pd.DataFrame) -> pd.DataFrame:
     
     # burn_probability now acts as smoke_proxy
     df = df.merge(df2, on=["lat", "lon", "time_utc"], how="left")
-    df["burn_probability"] = df["burn_probability"].fillna(0.0)
-    
+
     df["smoke_proxy"] = compute_smoke_proxy(
     df["burn_probability"].values,
     df["dist_to_front_km"].values,
@@ -131,7 +130,6 @@ def predict_hazard(
 
 
 if __name__ == "__main__":
-   
     df = pd.read_csv("datasets_train/FINAL_hazard_ml_30fires_48h.csv", parse_dates=["time_utc"])
 
     #feature matrix(modified inputs)
@@ -143,13 +141,18 @@ if __name__ == "__main__":
 
     #train and test split group 80% train, 20% test and it is gruped like fire_id
     groups = df["fire_id"]
-    splitter = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42) #randomly generated to cross validate data
-    train_idx, test_idx = next(splitter.split(X, y, groups))
+    #splitter = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42) #randomly generated to cross validate data
+    #train_idx, test_idx = next(splitter.split(X, y, groups))
+    TEST_FIRES = ['ffire_01', 'fire_07', 'fire_12', 'fire_21', 'fire_22', 'fire_26']
+    test_mask  = df['fire_id'].isin(TEST_FIRES)
+    train_idx  = df.index[~test_mask]
+    test_idx   = df.index[test_mask]
 
     X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
     y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
 
     print(f"\nTrain size: {len(X_train)}  Test size: {len(X_test)}")
+
     print(f"Test fires : {df['fire_id'].iloc[test_idx].unique()}")
 
     #model training
@@ -222,8 +225,9 @@ if __name__ == "__main__":
     joblib.dump(list(X.columns), "model_2/hazard_features.pkl")
 
     print("\nSaved as hazard_model.pkl (XGB) \nSaved as hazard_rf_model.pkl (RF) \nSaved as hazard_features.pkl (feature list)")
+    #print(f"burn_probability null rate in test set: {X_test['smoke_proxy'].isna().mean():.1%}")
     
-    df = df.merge(df2, on=["lat", "lon", "time_utc"], how="left")
-    print(f"smoke_proxy null rate(debugging): {df['burn_probability'].isna().mean():.1%}")
-    df["smoke_proxy"] = df["burn_probability"].fillna(0.0)
+    #df = df.merge(df2, on=["lat", "lon", "time_utc"], how="left")
+    #print(f"smoke_proxy null rate(debugging): {df['burn_probability'].isna().mean():.1%}")
+    #df["smoke_proxy"] = df["burn_probability"].fillna(0.0)
 

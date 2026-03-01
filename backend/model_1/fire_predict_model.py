@@ -46,8 +46,13 @@ print("Features used:", list(X.columns))
 print(f"Class balance → 0: {(y==0).sum()}  1: {(y==1).sum()}  ratio: {(y==0).sum()/(y==1).sum():.1f}:1")
 
 groups   = df['fire_id']
-splitter = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
-train_idx, test_idx = next(splitter.split(X, y, groups))
+#splitter = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
+#train_idx, test_idx = next(splitter.split(X, y, groups))
+TEST_FIRES = ['fire_01', 'fire_07', 'fire_12', 'fire_21', 'fire_22', 'fire_26']
+test_mask  = df['fire_id'].isin(TEST_FIRES)
+train_idx  = df.index[~test_mask]
+test_idx   = df.index[test_mask]
+
 
 X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
 y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
@@ -135,9 +140,10 @@ joblib.dump(xgb_model,       "model_1/fire_spread_model.pkl")
 joblib.dump(rf_model,        "model_1/fire_spread_rf_model.pkl")
 joblib.dump(list(X.columns), "model_1/fire_spread_features.pkl")
 
-all_probs = xgb_model.predict_proba(X)[:, 1]
-df["burn_probability"] = all_probs
-df.to_csv("model_1/fire_spread_with_probs.csv", index=False)
+df["burn_probability"] = np.nan
+df.loc[test_idx, "burn_probability"] = xgb_probs
+df.loc[test_idx].to_csv("model_1/fire_spread_with_probs.csv", index=False)
+
 print("\nSaved → fire_spread_with_probs.csv for model2")
 print("\nSaved → fire_spread_model.pkl (XGB)")
 print("Saved → fire_spread_rf_model.pkl (RF)")
