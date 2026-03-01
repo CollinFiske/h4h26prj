@@ -1,92 +1,113 @@
 """
-/api/predict  --  receives user form data, calls the ML model, returns results.
+Receives user form data, runs real-time feature extraction, calls the ML
+pipeline, and returns AI-generated evacuation guidance.
 """
 
 import sys
 import os
-from flask import Blueprint, request, jsonify
 import json
+import logging
 
-# ── Add the ML folder to the Python path so we can import from it ────
-ML_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "machine-learning-stuff"))
+from flask import Blueprint, request, jsonify
+
+ML_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "machine-learning-stuff")
+)
 if ML_DIR not in sys.path:
     sys.path.insert(0, ML_DIR)
 
-# ── Import AI model for conversational responses ────────────────────
 from ai import call_ai_model
+from inference import FireHazardService
+from realtime_data import get_nearest_calfire_perimeter_metrics, build_point_next_hour
 
-# ── Import your trained model wrapper ────────────────────────────────
-# Uncomment the line below once you've added your real model in
-# machine-learning-stuff/model.py
-#
-# from model import predict as ml_predict
-
+logger     = logging.getLogger(__name__)
 predict_bp = Blueprint("predict", __name__)
 
-# Module-level variable to hold the last received predict input (in-memory)
-LAST_PREDICT_INPUT = None
-# File to persist inputs (append-only, newline-delimited JSON). Change path if needed.
+_FIRE_SVC: FireHazardService | None = None
+
+def _get_fire_svc() -> FireHazardService:
+    global _FIRE_SVC
+    if _FIRE_SVC is None:
+        _FIRE_SVC = FireHazardService(
+            fire_model_path=os.path.join(ML_DIR, "model_1", "fire_spread_model.pkl"),
+            fire_feat_path =os.path.join(ML_DIR, "model_1", "fire_spread_features.pkl"),
+            haz_model_path =os.path.join(ML_DIR, "model_2", "hazard_model.pkl"),
+            haz_feat_path  =os.path.join(ML_DIR, "model_2", "hazard_features.pkl"),
+        )
+    return _FIRE_SVC
+
+
+# request logging (append-only JSONL)
 SAVED_INPUTS_FILE = os.path.join(os.path.dirname(__file__), "saved_inputs.jsonl")
 
-
-@predict_bp.before_request
-def _capture_predict_request():
-    """Capture and persist incoming JSON for the /predict endpoint
-    """
-    global LAST_PREDICT_INPUT
+def _persist_input(data: dict) -> None:
+    """Silently append request data to a JSONL log file."""
     try:
-        # Only capture POST to this blueprint's /predict route
-        if request.method != "POST" or not request.path.endswith("/predict"):
-            return
-        data = request.get_json(silent=True)
-        if data is None:
-            return
-        LAST_PREDICT_INPUT = data
-        # Ensure directory exists then append newline-delimited JSON
-        try:
-            with open(SAVED_INPUTS_FILE, "a", encoding="utf-8") as fh:
-                fh.write(json.dumps(data, ensure_ascii=False) + "\n")
-        except Exception:
-            # Swallow file IO errors so we don't break the request flow
-            pass
+        with open(SAVED_INPUTS_FILE, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(data, ensure_ascii=False) + "\n")
     except Exception:
-        # Guard against unexpected errors in the hook
-        pass
+        logger.exception("Failed to persist predict input")
 
+
+# route finder based on checkboxes
 
 @predict_bp.route("/predict", methods=["POST"])
 def predict():
-    """
-    Expects JSON body:
-    {
-        "latitude": float | null,
-        "longitude": float | null,
-        "has_disability": bool,
-        "has_pets": bool,
-        "has_kids": bool,
-        "has_medications": bool,
-        "other_concerns": str
-    }
-
-    Returns JSON with fire_risk, evacuation_route, and notes.
-    """
-
     data = request.get_json(silent=True)
     if data is None:
         return jsonify({"error": "Invalid or missing JSON body"}), 400
 
-    # ── Extract fields ───────────────────────────────────────────
-    latitude = data.get("latitude")
-    longitude = data.get("longitude")
-    has_disability = data.get("has_disability", False)
-    has_pets = data.get("has_pets", False)
-    has_kids = data.get("has_kids", False)
-    has_medications = data.get("has_medications", False)
-    other_concerns = data.get("other_concerns", "")
+    # validate required fields 
+    if data.get("latitude") is None or data.get("longitude") is None:
+        return jsonify({"error": "latitude and longitude are required"}), 400
 
-    # ── Call AI model for personalized guidance ──────────────────
-    ai_response = call_ai_model(data)
-    
+    try:
+        lat = float(data["latitude"])
+        lon = float(data["longitude"])
+    except (TypeError, ValueError):
+        return jsonify({"error": "latitude and longitude must be numbers"}), 400
+
+    # optional user-context fields 
+    ctx = {
+        **data,
+        "has_disability":  bool(data.get("has_disability",  False)),
+        "has_pets":        bool(data.get("has_pets",        False)),
+        "has_kids":        bool(data.get("has_kids",        False)),
+        "has_medications": bool(data.get("has_medications", False)),
+        "other_concerns":  str(data.get("other_concerns",  "") or ""),
+    }
+
+    _persist_input(ctx)
+
+    # real-time data: nearest CAL FIRE perimeter 
+    try:
+        pm = get_nearest_calfire_perimeter_metrics(lat=lat, lon=lon, search_km=100)
+    except Exception as exc:
+        logger.exception("CAL FIRE perimeter lookup failed")
+        return jsonify({"error": f"No nearby fire perimeter found: {exc}"}), 400
+
+    try:
+        point = build_point_next_hour(lat=lat, lon=lon, pm=pm)
+    except Exception as exc:
+        logger.exception("build_point_next_hour failed")
+        return jsonify({"error": f"Failed to build realtime features: {exc}"}), 500
+
+    # model inference 
+    try:
+        ml_out = _get_fire_svc().predict_one(point)
+    except Exception as exc:
+        logger.exception("ML inference failed")
+        return jsonify({"error": f"ML inference failed: {exc}"}), 500
+
+    ai_response = call_ai_model({**ctx, "ml": ml_out})
+
     return jsonify({
+        "selected_fire": {
+            "fire_name": pm.get("fire_name"),
+            "year":      pm.get("year"),
+            "inc_num":   pm.get("inc_num"),
+            "irwinid":   pm.get("irwinid"),
+        },
+        "ml":       ml_out,
         "guidance": ai_response,
     })
