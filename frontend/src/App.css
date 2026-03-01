@@ -1,0 +1,253 @@
+/* ───────────────────────── Global Reset ───────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  background-color: #f5f5f5;
+  color: #1a1a1a;
+  line-height: 1.5;
+}
+
+/* ───────────────────────── App Container ───────────────────────── */
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+/* ───────────────────────── Header ───────────────────────── */
+.app-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.app-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+.app-header p {
+  margin-top: 4px;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+/* ───────────────────────── Location Display ───────────────────────── */
+.location-section {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.location-section h2 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+.location-section .coords {
+  font-family: monospace;
+  background: #f0f0f0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.location-section .error {
+  color: #b91c1c;
+}
+
+/* ───────────────────────── Map + Results Row ───────────────────── */
+.map-results-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 24px;
+  align-items: stretch;
+}
+
+/* ───────────────────────── Placeholder Map ───────────────────────── */
+.map-placeholder {
+  flex: 1 1 50%;
+  min-height: 280px;
+  background: #d4d4d4;
+  border: 2px dashed #999;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555;
+  font-size: 1rem;
+}
+
+/* ───────────────────────── Results Column ───────────────────────── */
+.results-column {
+  flex: 1 1 50%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ───────────────────────── Results Panel ───────────────────────── */
+.results-panel {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.results-panel h2 {
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  color: #b91c1c;
+}
+
+.results-empty {
+  opacity: 0.6;
+}
+
+/* Monospace output block that matches Jupyter notebook style */
+.result-pre {
+  font-family: "Courier New", Courier, "Lucida Console", monospace;
+  font-size: 0.88rem;
+  line-height: 1.65;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 16px;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-x: auto;
+  flex: 1;
+}
+
+.result-pre.result-error {
+  color: #f87171;
+}
+
+/* ───────────────────────── Responsive: stack on small screens ──── */
+@media (max-width: 720px) {
+  .map-results-row {
+    flex-direction: column;
+  }
+}
+
+/* ───────────────────────── Evacuation Form ───────────────────────── */
+.evacuation-form {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.evacuation-form h2 {
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.form-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #b91c1c;
+}
+
+.form-group textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+  margin-top: 6px;
+}
+
+.form-group input[type="number"],
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group input[type="time"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  margin-top: 6px;
+}
+
+.form-group textarea:focus {
+  outline: none;
+  border-color: #b91c1c;
+}
+
+.form-group input[type="number"]:focus,
+.form-group input[type="text"]:focus,
+.form-group input[type="date"]:focus,
+.form-group input[type="time"]:focus {
+  outline: none;
+  border-color: #b91c1c;
+}
+
+.submit-btn {
+  display: inline-block;
+  background-color: #b91c1c;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 28px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-btn:hover {
+  background-color: #991b1b;
+}
+
+.submit-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* ───────────────────────── Loading Spinner ───────────────────────── */
+.loading {
+  text-align: center;
+  color: #777;
+  padding: 12px;
+}
