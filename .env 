@@ -1,9 +1,9 @@
 # Visual Crossing Weather API
-VISUAL_CROSSING_API_KEY=your_key_here
+VISUAL_CROSSING_API_KEY= 
 
-# Anthropic (for call_ai_model in ai.py)
-ANTHROPIC_API_KEY=your_key_here
+# OpenAI (for call_ai_model in ai.py)
+OpenAI_API_KEY=
 
 # Flask
-FLASK_SECRET_KEY=your_secret_here
-FLASK_ENV=development
+FLASK_SECRET_KEY=
+FLASK_ENV=
