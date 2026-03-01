@@ -23,4 +23,4 @@ backend/venv/
 # Build outputs
 dist/
 build/
-coverage/
+coverage/*.pkl
