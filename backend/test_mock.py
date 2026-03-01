@@ -61,10 +61,10 @@ def test_ai_direct():
     
     result = call_ai_model(test_input)
     print("✓ AI Response:")
-    print(json.dumps(result, indent=2))
+    print(result)  # Now returns plain text conversation
     
-    if "error" in result:
-        print("✗ Error detected:", result.get("error"))
+    if "Error:" in result:
+        print("\n✗ Error detected in response")
         return False
     return True
 

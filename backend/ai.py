@@ -8,15 +8,15 @@ import json
 import requests
 
 
-def call_ai_model(input_data: dict) -> dict:
+def call_ai_model(input_data: dict) -> str:
     """
-    Send input_data to OpenAI API and return the response.
+    Send input_data to OpenAI API and return a conversational response.
 
     Args:
         input_data: Dictionary containing user input (e.g., from LAST_PREDICT_INPUT)
 
     Returns:
-        Dictionary with AI model response or error details.
+        Conversational string with AI evacuation guidance, or error message.
 
     Environment Variables Expected:
         - OPENAI_API_KEY: OpenAI API key (required)
@@ -27,10 +27,7 @@ def call_ai_model(input_data: dict) -> dict:
     api_url = "https://api.openai.com/v1/chat/completions"
 
     if not api_key:
-        return {
-            "error": "Missing OPENAI_API_KEY environment variable",
-            "status": "error",
-        }
+        return "Error: Missing OPENAI_API_KEY environment variable"
 
     try:
         # Prepare the payload for OpenAI
@@ -39,24 +36,34 @@ def call_ai_model(input_data: dict) -> dict:
             "messages": [
                 {
                     "role": "system",
-                    "content": "You are a fire evacuation assistant providing guidance based on user input and location.",
+                    "content": """You are a fire evacuation assistant. Respond in exactly this format:
+
+FIRE RISK LEVEL: [CRITICAL/HIGH/MODERATE/LOW]
+
+EVACUATION ROUTE:
+[Specific directions in 80 words or less]
+
+SPECIAL ACCOMMODATIONS:
+[Any needed accommodations based on their needs, or "None needed" if N/A]
+
+Be direct, clear, and use their provided information (disabilities, pets, kids, medications, concerns).""",
                 },
                 {
                     "role": "user",
-                    "content": f"""Based on the following user input, provide structured evacuation guidance.
+                    "content": f"""I need evacuation guidance for:
 
-User Input:
-{json.dumps(input_data, indent=2)}
+Location: {input_data.get('latitude', 'N/A')}°, {input_data.get('longitude', 'N/A')}°
+Has disabilities: {input_data.get('has_disability', False)}
+Has pets: {input_data.get('has_pets', False)}
+Has kids: {input_data.get('has_kids', False)}
+Taking medications: {input_data.get('has_medications', False)}
+Other concerns: {input_data.get('other_concerns', 'None')}
 
-Provide your response in this exact format:
-FIRE_RISK: [LOW|MODERATE|HIGH|CRITICAL]
-EVACUATION_ROUTE: [Provide specific directions]
-SPECIAL_ACCOMMODATIONS: [List any needed accommodations]
-""",
+Provide my evacuation plan in the requested format.""",
                 }
             ],
             "temperature": 0.7,
-            "max_tokens": 500,
+            "max_tokens": 300,
         }
 
         # Add authorization header
@@ -70,54 +77,16 @@ SPECIAL_ACCOMMODATIONS: [List any needed accommodations]
         response.raise_for_status()
 
         result = response.json()
-        return {
-            "status": "success",
-            "data": result,
-            "raw_input": input_data,
-        }
+        # Extract the assistant's message text
+        message_content = result["choices"][0]["message"]["content"].strip()
+        return message_content
 
     except requests.exceptions.Timeout:
-        return {
-            "error": "AI model request timed out",
-            "status": "error",
-        }
+        return "Error: The AI service took too long to respond. Please try again."
     except requests.exceptions.RequestException as e:
-        return {
-            "error": f"AI model request failed: {str(e)}",
-            "status": "error",
-        }
+        return f"Error: Could not reach the AI service. {str(e)}"
     except json.JSONDecodeError as e:
-        return {
-            "error": f"Failed to parse AI response: {str(e)}",
-            "status": "error",
-        }
+        return f"Error: Could not understand the AI response. {str(e)}"
     except Exception as e:
-        return {
-            "error": f"Unexpected error calling AI model: {str(e)}",
-            "status": "error",
-        }
+        return f"Error: Something went wrong. {str(e)}"
 
-
-def get_ai_response_text(ai_result: dict) -> str:
-    """
-    Extract readable text from AI model response.
-
-    Args:
-        ai_result: Dictionary returned by call_ai_model()
-
-    Returns:
-        Formatted string with AI response or error message
-    """
-    if ai_result.get("status") == "error":
-        return f"Error: {ai_result.get('error', 'Unknown error')}"
-
-    try:
-        data = ai_result.get("data", {})
-        # Extract from OpenAI-style response
-        if "choices" in data and len(data["choices"]) > 0:
-            message = data["choices"][0].get("message", {})
-            return message.get("content", "No response content")
-        # Fallback for other response formats
-        return json.dumps(data, indent=2)
-    except Exception as e:
-        return f"Failed to extract response: {str(e)}"
