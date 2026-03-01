@@ -8,7 +8,8 @@ python3 -m venv venv
 source venv/bin/activate
 
 # 4. install all packages needed
-pip install pandas numpy scikit-learn xgboost joblib requests
+pip install pandas numpy scikit-learn xgboost joblib requests flask requests shapely pyproj
+pip install -r requirements.txt
 
 # 5. now run model 1 to train
 python model_1/fire_predict_model.py
