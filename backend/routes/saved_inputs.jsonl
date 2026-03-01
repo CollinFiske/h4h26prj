@@ -1,2 +1,4 @@
 {"latitude": 37.7749, "longitude": -122.4194, "has_disability": false, "has_pets": true, "has_kids": false, "has_medications": false, "other_concerns": "Live near hillside"}
 {"latitude": 37.7749, "longitude": -122.4194, "has_disability": false, "has_pets": true, "has_kids": false, "has_medications": false, "other_concerns": "Live near hillside"}
+{"latitude": 37.34868315081675, "longitude": -121.93998833759078, "location_name": "San Jose", "date": "2026-02-28", "time": "20:56", "has_disability": true, "has_pets": true, "has_kids": true, "has_medications": true, "other_concerns": ""}
+{"latitude": 37.34868315081675, "longitude": -121.93998833759078, "location_name": "San Jose", "date": "2026-02-28", "time": "20:56", "has_disability": false, "has_pets": true, "has_kids": true, "has_medications": true, "other_concerns": ""}
