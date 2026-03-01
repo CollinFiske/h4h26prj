@@ -10,13 +10,14 @@ source venv/bin/activate
 # 4. install all packages needed
 pip install pandas numpy scikit-learn xgboost joblib requests
 
-# 5. now run model 1
+# 5. now run model 1 to train
 python model_1/fire_predict_model.py
 
-# 6. then run model 2
+# 6. then run model 2 to train
 python model_2/hazard_score_model.py
 
 
 You'll know the venv is active when your terminal shows `(venv)` at the start of the line:
 Ex:
 (venv) lillianle@Lillians-MacBook-Air-2 backend %
+

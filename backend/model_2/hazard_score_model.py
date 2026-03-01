@@ -27,8 +27,8 @@ DROP_COLS = [
 #takes raw input data and creates smarter features for the model such we convert time into readable data for the model
 #
 #
-df2 = pd.read_csv("model_1/fire_spread_with_probs.csv")[["lat", "lon", "time_utc", "burn_probability"]]
-df2["time_utc"] = pd.to_datetime(df2["time_utc"], utc=True)
+#df2 = pd.read_csv("model_1/fire_spread_with_probs.csv")[["lat", "lon", "time_utc", "burn_probability"]]
+#df2["time_utc"] = pd.to_datetime(df2["time_utc"], utc=True)
 
 def compute_smoke_proxy(burn_prob, dist_to_front_km, downwind_alignment, wind_speed_ms):
     d = np.maximum(dist_to_front_km, 0)
@@ -42,7 +42,10 @@ def build_hazard_features(df_in: pd.DataFrame) -> pd.DataFrame:
     df = df_in.copy()
     
     # burn_probability now acts as smoke_proxy
-    df = df.merge(df2, on=["lat", "lon", "time_utc"], how="left")
+        #df = df.merge(df2, on=["lat", "lon", "time_utc"], how="left")
+    if "burn_probability" not in df.columns:
+        raise ValueError("Model 2 requires burn_probability (call Model 1 first).")
+    df["burn_probability"] = df["burn_probability"].fillna(0.0)
 
     df["smoke_proxy"] = compute_smoke_proxy(
     df["burn_probability"].values,
