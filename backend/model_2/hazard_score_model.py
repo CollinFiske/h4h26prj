@@ -1,3 +1,4 @@
+
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
@@ -143,20 +144,21 @@ if __name__ == "__main__":
     groups = df["fire_id"]
     #splitter = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42) #randomly generated to cross validate data
     #train_idx, test_idx = next(splitter.split(X, y, groups))
-    TEST_FIRES = ['ffire_01', 'fire_07', 'fire_12', 'fire_21', 'fire_22', 'fire_26']
-    test_mask  = df['fire_id'].isin(TEST_FIRES)
-    train_idx  = df.index[~test_mask]
-    test_idx   = df.index[test_mask]
+    #TEST_FIRES = ['ffire_01', 'fire_07', 'fire_12', 'fire_21', 'fire_22', 'fire_26']
+    #test_mask  = df['fire_id'].isin(TEST_FIRES)
+    #train_idx  = df.index[~test_mask]
+    #test_idx   = df.index[test_mask]
 
-    X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
-    y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+    #X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
+    #y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+    X_train,y_train = X, y
 
-    print(f"\nTrain size: {len(X_train)}  Test size: {len(X_test)}")
-
-    print(f"Test fires : {df['fire_id'].iloc[test_idx].unique()}")
+    #print(f"\nTrain size: {len(X_train)}  Test size: {len(X_test)}")
+    #print(f"Test fires : {df['fire_id'].iloc[test_idx].unique()}")
 
     #model training
-    def train_model(X_train, X_test, y_train, y_test, algo):
+    #def train_model(X_train, X_test, y_train, y_test, algo):
+    def train_model(X_train, y_train, algo):
         if algo == "rf":
             model = RandomForestClassifier(
                 n_estimators=600, #600 trees
@@ -186,6 +188,9 @@ if __name__ == "__main__":
             )
 
         model.fit(X_train, y_train)
+        print(f"Trained: {algo.upper()}")
+        return model
+    '''
         pred = model.predict(X_test)
 
         acc = accuracy_score(y_test, pred) 
@@ -200,15 +205,17 @@ if __name__ == "__main__":
         print("\nClassification report:\n", classification_report(y_test, pred, digits=3))
 
         return model
-    
-    rf_model  = train_model(X_train, X_test, y_train, y_test, algo="rf") 
-    xgb_model = train_model(X_train, X_test, y_train, y_test, algo="xgb")
+    '''
+    #rf_model  = train_model(X_train, X_test, y_train, y_test, algo="rf") 
+    #xgb_model = train_model(X_train, X_test, y_train, y_test, algo="xgb")
+    rf_model  = train_model(X_train, y_train, algo="rf") 
+    xgb_model = train_model(X_train, y_train, algo="xgb")
 
     # overfit check
-    print("\n" + "-"*40)
-    print("Overfit check (train vs test accuracy):")
-    print(f"RF   train: {rf_model.score(X_train,  y_train):.3f}   test: {rf_model.score(X_test,  y_test):.3f}")
-    print(f"XGB  train: {xgb_model.score(X_train, y_train):.3f}   test: {xgb_model.score(X_test, y_test):.3f}")
+    #print("\n" + "-"*40)
+    #print("Overfit check (train vs test accuracy):")
+    #print(f"RF   train: {rf_model.score(X_train,  y_train):.3f}   test: {rf_model.score(X_test,  y_test):.3f}")
+    #print(f"XGB  train: {xgb_model.score(X_train, y_train):.3f}   test: {xgb_model.score(X_test, y_test):.3f}")
 
     #extracts features XGBoost model most relied to see if there is bias or outliers
     feat_imp = pd.Series(
