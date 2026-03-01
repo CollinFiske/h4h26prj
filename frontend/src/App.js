@@ -18,7 +18,7 @@ function App() {
     setPrediction(null);
 
     try {
-      const response = await fetch("/evac/now", {
+      const response = await fetch("/api/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
